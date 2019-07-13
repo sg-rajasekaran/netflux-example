@@ -1,4 +1,4 @@
-package guru.springframework.bootstrap;
+package guru.springframework.netfluxexample.bootstrap;
 
 import guru.springframework.netfluxexample.domain.Movie;
 import guru.springframework.netfluxexample.repositories.MovieRepository;
@@ -25,15 +25,16 @@ public class BootstrapCLR implements CommandLineRunner {
     public void run(String...args) throws Exception {
 
         //Clear all old data
-        movieRepository.deleteAll().block();
+        movieRepository.deleteAll().thenMany(
+                Flux.just("Silence of Lambdas", "AEon Flux","Enter the Mono<void>","The Fluxxinator",
+                        "Back to Future","Lord of Fluxes","Veerapandia Kattabomman")
+                        .map(title -> new Movie(title))
+                        .flatMap(movieRepository::save))
+                        .subscribe(null,null, () -> {
+                            movieRepository.findAll().subscribe(System.out::println);
+                        });
 
-        Flux.just("Silence of Lambdas", "AEon Flux","Enter the Mono<void>","The Fluxxinator",
-                "Back to Future","Lord of Fluxes")
-                .map(title -> new Movie(UUID.randomUUID().toString(),title))
-                .flatMap(movieRepository::save)
-                .subscribe(null,null, () -> {
-                    movieRepository.findAll().subscribe(System.out::println);
-                });
+
     }
 
 
